@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "yWbT4AP3JQSBH60Mf+sSLCUyNUfxj0D4NdmmTZ4eQDAIgGPaNVbLv8MqOWd8E0X7j9bWJfAYV9lEGSxenFLmzQ==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\bower\\Desktop\\myScript2\\ImportExportMod.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\bower\\.nuget\\packages\\ini-parser\\2.5.2\\ini-parser.2.5.2.nupkg.sha512",
+    "C:\\Users\\bower\\.nuget\\packages\\microsoft.netframework.referenceassemblies\\1.0.2\\microsoft.netframework.referenceassemblies.1.0.2.nupkg.sha512",
+    "C:\\Users\\bower\\.nuget\\packages\\microsoft.netframework.referenceassemblies.net48\\1.0.2\\microsoft.netframework.referenceassemblies.net48.1.0.2.nupkg.sha512"
+  ],
+  "logs": []
+}
