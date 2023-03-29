@@ -2,15 +2,6 @@
   "version": 3,
   "targets": {
     ".NETFramework,Version=v4.8": {
-      "ini-parser/2.5.2": {
-        "type": "package",
-        "compile": {
-          "lib/net20/INIFileParser.dll": {}
-        },
-        "runtime": {
-          "lib/net20/INIFileParser.dll": {}
-        }
-      },
       "Microsoft.NETFramework.ReferenceAssemblies/1.0.2": {
         "type": "package",
         "dependencies": {
@@ -35,20 +26,6 @@
     }
   },
   "libraries": {
-    "ini-parser/2.5.2": {
-      "sha512": "hp3gKmC/14+6eKLgv7Jd1Z7OV86lO+tNfOXr/stQbwmRhdQuXVSvrRAuAe7G5+lwhkov0XkqZ8/bn1PYWMx6eg==",
-      "type": "package",
-      "path": "ini-parser/2.5.2",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "ini-parser.2.5.2.nupkg.sha512",
-        "ini-parser.nuspec",
-        "lib/net20/INIFileParser.dll",
-        "lib/net20/INIFileParser.dll.mdb",
-        "lib/net20/INIFileParser.xml"
-      ]
-    },
     "Microsoft.NETFramework.ReferenceAssemblies/1.0.2": {
       "sha512": "5/cSEVld+px/CuRrbohO/djfg6++eR6zGpy88MgqloXvkj//WXWpFZyu/OpkXPN0u5m+dN/EVwLNYFUxD4h2+A==",
       "type": "package",
@@ -474,8 +451,7 @@
   "projectFileDependencyGroups": {
     ".NETFramework,Version=v4.8": [
       "Microsoft.NETFramework.ReferenceAssemblies >= 1.0.2",
-      "Newtonsoft.Json >= 13.0.3",
-      "ini-parser >= 2.5.2"
+      "Newtonsoft.Json >= 13.0.3"
     ]
   },
   "packageFolders": {
@@ -524,10 +500,6 @@
           "Newtonsoft.Json": {
             "target": "Package",
             "version": "[13.0.3, )"
-          },
-          "ini-parser": {
-            "target": "Package",
-            "version": "[2.5.2, )"
           }
         },
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.201\\RuntimeIdentifierGraph.json"
