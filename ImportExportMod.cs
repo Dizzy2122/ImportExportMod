@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 public class ImportExportMod : Script
 {
+    private MissionMenu missionMenu;
     private InteriorManager interiorManager;
     private Warehouse enteredWarehouse;
     private UIMenu mainMenu;
@@ -27,6 +28,9 @@ public class ImportExportMod : Script
 
     public ImportExportMod()
     {
+        interiorManager = new InteriorManager();
+        missionMenu = new MissionMenu(interiorManager);
+
         settings = ScriptSettings.Load("ImportExportMod.ini");
         LoadSettings();
 
@@ -40,6 +44,8 @@ public class ImportExportMod : Script
         // Initialize the menu pool and main menu
         menuPool = new MenuPool();
         mainMenu = new UIMenu("Warehouse Manager", "Select an option:");
+        
+        
         menuPool.Add(mainMenu);
 
         // Create menu items
@@ -57,11 +63,13 @@ public class ImportExportMod : Script
         this.KeyDown += (o, e) => menuPool.ProcessKey(e.KeyCode);
     }
 
+
     private void OnTick(object sender, EventArgs e)
     {
         CheckPlayerInteractionWithWarehouses();
         CheckPlayerInteractionWithExitPoint();
         menuPool.ProcessMenus();
+        this.KeyDown += (o, e) => menuPool.ProcessKey(e.KeyCode);
     }
 
     private void CheckPlayerInteractionWithWarehouses()
