@@ -6,12 +6,13 @@ using System.Windows.Forms;
 
 public class MenuHandler : Script
 {
+    private MissionMenu _missionMenu;
     private MenuPool _menuPool;
     private UIMenu _testMenu;
     private GTA.Math.Vector3 _laptopLocation = new GTA.Math.Vector3(964.9951f, -3003.473f, -39.63989f);
     private float _interactionDistance = 2.0f;
 
-    public MenuHandler()
+    public MenuHandler(InteriorManager interiorManager)
     {
         GTA.UI.Notification.Show("MenuHandler constructor called");
 
@@ -25,6 +26,8 @@ public class MenuHandler : Script
         _testMenu.AddItem(stealCarMission);
         _testMenu.AddItem(sellWarehouseVehicle);
         _testMenu.AddItem(exitWarehouseItem);
+
+        _missionMenu = new MissionMenu(this, interiorManager);
 
         _testMenu.OnItemSelect += OnItemSelect;
 

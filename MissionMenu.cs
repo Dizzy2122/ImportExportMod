@@ -6,15 +6,16 @@ using System.Windows.Forms;
 
 public class MissionMenu : Script
 {
+
+    private MenuHandler _menuHandler;
     private MenuPool _menuPool;
     private UIMenu _testMenu;
     private GTA.Math.Vector3 _laptopLocation = new GTA.Math.Vector3(964.9951f, -3003.473f, -39.63989f);
     private float _interactionDistance = 2.0f;
-    private InteriorManager _interiorManager;
 
-    public MissionMenu(InteriorManager interiorManager)
+    public MissionMenu(MenuHandler menuHandler, InteriorManager interiorManager)
     {
-        _interiorManager = interiorManager;
+         _menuHandler = menuHandler;
 
         GTA.UI.Notification.Show("MissionMenu constructor called");
 
@@ -34,10 +35,33 @@ public class MissionMenu : Script
         this.Tick += OnTick;
     }
 
-    private void OnItemSelect(UIMenu sender, UIMenuItem selectedItem, int index)
+    private async void OnItemSelect(UIMenu sender, UIMenuItem selectedItem, int index)
+{
+    if (selectedItem == sender.MenuItems[index])
     {
-        // Your mission logic
+        if (index == 0)
+        {
+            // Steal a car mission
+            MissionScript missionScript = new MissionScript();
+            missionScript.StartStealCarMission();
+        }
+        else if (index == 1)
+        {
+            // Sell warehouse vehicle
+            // Your code for selling warehouse vehicle here
+        }
+        else if (index == 2)
+        {
+            // Exit warehouse
+            GTA.Math.Vector3 initialEntryPoint = _interiorManager.GetInitialEntryPoint();
+            GTA.UI.Notification.Show($"Teleporting player back to: {initialEntryPoint}"); // Debug notification
+            Game.Player.Character.Position = initialEntryPoint;
+            await _interiorManager.ExitWarehouse();
+        }
     }
+}
+
+
 
     private void OnTick(object sender, EventArgs e)
     {

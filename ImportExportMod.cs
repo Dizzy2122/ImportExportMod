@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 public class ImportExportMod : Script
 {
+    
     private MissionMenu missionMenu;
     private InteriorManager interiorManager;
     private Warehouse enteredWarehouse;
@@ -25,9 +26,13 @@ public class ImportExportMod : Script
     private List<string> addonCarModelNames;
     private ScriptSettings settings;
     private int carSetting;
+    private InteriorManager _interiorManager;
 
+
+    
     public ImportExportMod(InteriorManager interiorManager)
     {
+
 
         GTA.UI.Notification.Show("ImportExportMod constructor called");
 
@@ -119,6 +124,7 @@ public class ImportExportMod : Script
 
         // Attach the event handler for item selection
         mainMenu.OnItemSelect += MainMenu_OnItemSelect;
+        
 
         // Set the initial states for the menu items
         purchaseWarehouseItem.Enabled = false;

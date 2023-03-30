@@ -1,4 +1,3 @@
-// Initializer.cs
 using GTA;
 
 public class Initializer : Script
@@ -10,7 +9,7 @@ public class Initializer : Script
     public Initializer()
     {
         _interiorManager = new InteriorManager();
-        _menuHandler = new MenuHandler();
+        _menuHandler = new MenuHandler(_interiorManager);
         _importExportMod = new ImportExportMod(_interiorManager);
     }
 }
