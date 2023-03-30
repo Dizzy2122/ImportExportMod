@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 
 public class ImportExportMod : Script
 {
-    private MissionMenu missionMenu;
     private InteriorManager interiorManager;
     private Warehouse enteredWarehouse;
     private UIMenu mainMenu;
@@ -30,6 +29,9 @@ public class ImportExportMod : Script
     {
         interiorManager = new InteriorManager();
         missionMenu = new MissionMenu(interiorManager);
+
+        // Subscribe to Tick event
+        this.Tick += missionMenu.OnTick;
 
         settings = ScriptSettings.Load("ImportExportMod.ini");
         LoadSettings();

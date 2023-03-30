@@ -22,4 +22,14 @@ public static class IPLHelper
 
         GTA.UI.Notification.Show($"IPL {iplName} is now active.");
     }
+
+    public static async Task UnloadIPLAsync(string iplName)
+{
+    if (Function.Call<bool>(Hash.IS_IPL_ACTIVE, iplName))
+    {
+        Function.Call(Hash.REMOVE_IPL, iplName);
+        await Task.Delay(0);
+    }
+}
+
 }
