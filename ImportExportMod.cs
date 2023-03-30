@@ -10,9 +10,8 @@ using System.Threading.Tasks;
 
 public class ImportExportMod : Script
 {
-    
+    private MenuHandler _menuHandler;
     private MissionMenu missionMenu;
-    private InteriorManager interiorManager;
     private Warehouse enteredWarehouse;
     private UIMenu mainMenu;
     private UIMenu exitInteriorMenu;
@@ -28,16 +27,13 @@ public class ImportExportMod : Script
     private int carSetting;
     private InteriorManager _interiorManager;
 
-
-    
     public ImportExportMod(InteriorManager interiorManager)
     {
-
-
         GTA.UI.Notification.Show("ImportExportMod constructor called");
 
-        interiorManager = new InteriorManager();
-        missionMenu = new MissionMenu(interiorManager);
+        _interiorManager = interiorManager;
+        _menuHandler = new MenuHandler(interiorManager, availableWarehouses, ownedWarehouses);
+        missionMenu = new MissionMenu(_menuHandler, interiorManager);
 
 
 
@@ -146,7 +142,7 @@ public class ImportExportMod : Script
         else if (selectedItem == enterWarehouseItem)
         {
             // Apply the 'await' operator and call EnterWarehouse with the currentWarehouse parameter
-            await interiorManager.EnterWarehouse(currentWarehouse);
+            await _interiorManager.EnterWarehouse(currentWarehouse);
         }
         else if (selectedItem == sellWarehouseItem)
         {

@@ -2,36 +2,75 @@
 using GTA;
 using NativeUI;
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
-
 public class MenuHandler : Script
 {
     private MissionMenu _missionMenu;
+    private InteriorManager _interiorManager;
+    private UIMenu _mainMenu;
     private MenuPool _menuPool;
     private UIMenu _testMenu;
     private GTA.Math.Vector3 _laptopLocation = new GTA.Math.Vector3(964.9951f, -3003.473f, -39.63989f);
     private float _interactionDistance = 2.0f;
+    private ImportExportMod _importExportMod;
 
-    public MenuHandler(InteriorManager interiorManager)
+    public MenuHandler(InteriorManager interiorManager, List<Warehouse> availableWarehouses, List<Warehouse> ownedWarehouses)
     {
-        GTA.UI.Notification.Show("MenuHandler constructor called");
 
+        
+        GTA.UI.Notification.Show("MenuHandler constructor called");
+        
+        _importExportMod = importExportMod;
+        _interiorManager = interiorManager;
         _menuPool = new MenuPool();
+
+        // Set up the main exterior menu
+        _mainMenu = new UIMenu("Warehouse Manager", "Select an option:");
+        _menuPool.Add(_mainMenu);
+
+        // Set up the interior mission menu
         _testMenu = new UIMenu("Test Menu", "TEST MENU OPTIONS");
         _menuPool.Add(_testMenu);
 
-        UIMenuItem stealCarMission = new UIMenuItem("Steal a Car");
-        UIMenuItem sellWarehouseVehicle = new UIMenuItem("Sell Warehouse Vehicle");
-        UIMenuItem exitWarehouseItem = new UIMenuItem("Exit Warehouse");
-        _testMenu.AddItem(stealCarMission);
-        _testMenu.AddItem(sellWarehouseVehicle);
-        _testMenu.AddItem(exitWarehouseItem);
-
+        // Initialize the mission menu
         _missionMenu = new MissionMenu(this, interiorManager);
 
-        _testMenu.OnItemSelect += OnItemSelect;
+        // Add main menu items
+        SetupMainMenuItems(availableWarehouses, ownedWarehouses);
 
+        // Subscribe to the Tick event
         this.Tick += OnTick;
+
+        // Handle menu input
+        this.KeyDown += (o, e) => _menuPool.ProcessKey(e.KeyCode);
+    }
+
+        private async void MainMenu_OnItemSelect(UIMenu sender, UIMenuItem selectedItem, int index)
+{
+    if (selectedItem == sender.MenuItems[index])
+    {
+        if (index == 0)
+        {
+            // Purchase warehouse logic
+            await _importExportMod.PurchaseWarehouse();
+        }
+        else if (index == 1)
+        {
+            // Enter warehouse logic
+            Warehouse warehouse = ...; // Get the selected warehouse from available or owned warehouses
+            await _importExportMod.EnterWarehouse(warehouse);
+        }
+    }
+}
+
+
+
+
+    private void SetupMainMenuItems(List<Warehouse> availableWarehouses, List<Warehouse> ownedWarehouses)
+    {
+        // Add menu items for the main exterior menu
+        // You can copy the code from the ImportExportMod class where you set up the main menu items
     }
 
     private void OnItemSelect(UIMenu sender, UIMenuItem selectedItem, int index)
