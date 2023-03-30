@@ -7,22 +7,24 @@ using System.Windows.Forms;
 public class MenuHandler : Script
 {
     private MissionMenu _missionMenu;
-    private InteriorManager _interiorManager;
     private UIMenu _mainMenu;
+    private InteriorManager _interiorManager;
+    private ImportExportMod _importExportMod;
     private MenuPool _menuPool;
     private UIMenu _testMenu;
     private GTA.Math.Vector3 _laptopLocation = new GTA.Math.Vector3(964.9951f, -3003.473f, -39.63989f);
     private float _interactionDistance = 2.0f;
-    private ImportExportMod _importExportMod;
 
     public MenuHandler(InteriorManager interiorManager, List<Warehouse> availableWarehouses, List<Warehouse> ownedWarehouses)
     {
 
         
         GTA.UI.Notification.Show("MenuHandler constructor called");
-        
-        _importExportMod = importExportMod;
+
         _interiorManager = interiorManager;
+        _importExportMod = importExportMod;
+
+        InitializeMenu();
         _menuPool = new MenuPool();
 
         // Set up the main exterior menu

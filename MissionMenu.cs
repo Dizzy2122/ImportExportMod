@@ -6,7 +6,6 @@ using System.Windows.Forms;
 
 public class MissionMenu : Script
 {
-    private ImportExportMod _importExportMod;
     private Warehouse currentWarehouse;
     private UIMenuItem purchaseWarehouseItem;
     private UIMenuItem enterWarehouseItem;
