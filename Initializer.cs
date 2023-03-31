@@ -12,6 +12,7 @@ public class Initializer : Script
     {
         _interiorManager = new InteriorManager();
         _importExportMod = new ImportExportMod(_interiorManager);
-        _menuHandler = new MenuHandler(_interiorManager, _importExportMod);
+        _menuHandler = _importExportMod.MenuHandlerInstance;
     }
 }
+

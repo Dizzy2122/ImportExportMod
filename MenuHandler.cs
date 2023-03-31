@@ -12,10 +12,13 @@ public class MenuHandler : Script
     private ImportExportMod _importExportMod;
     private MenuPool _menuPool;
     private UIMenu _testMenu;
+    private List<Warehouse> _availableWarehouses;
+    private List<Warehouse> _ownedWarehouses;
     private GTA.Math.Vector3 _laptopLocation = new GTA.Math.Vector3(964.9951f, -3003.473f, -39.63989f);
     private float _interactionDistance = 2.0f;
 
-    public MenuHandler(InteriorManager interiorManager, List<Warehouse> availableWarehouses, List<Warehouse> ownedWarehouses)
+        public MenuHandler(InteriorManager interiorManager, ImportExportMod importExportMod, List<Warehouse> availableWarehouses, List<Warehouse> ownedWarehouses)
+
     {
 
         
@@ -23,6 +26,9 @@ public class MenuHandler : Script
 
         _interiorManager = interiorManager;
         _importExportMod = importExportMod;
+        _availableWarehouses = availableWarehouses;
+        _ownedWarehouses = ownedWarehouses;
+        
 
         InitializeMenu();
         _menuPool = new MenuPool();

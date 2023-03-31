@@ -26,14 +26,19 @@ public class ImportExportMod : Script
     private ScriptSettings settings;
     private int carSetting;
     private InteriorManager _interiorManager;
+    public MenuHandler MenuHandlerInstance
+{
+    get { return _menuHandler; }
+}
+
 
     public ImportExportMod(InteriorManager interiorManager)
-    {
-        GTA.UI.Notification.Show("ImportExportMod constructor called");
+{
+    GTA.UI.Notification.Show("ImportExportMod constructor called");
 
-        _interiorManager = interiorManager;
-        _menuHandler = new MenuHandler(interiorManager, availableWarehouses, ownedWarehouses);
-        missionMenu = new MissionMenu(_menuHandler, interiorManager);
+    _interiorManager = interiorManager;
+    _menuHandler = new MenuHandler(_interiorManager, this, availableWarehouses, ownedWarehouses);
+    missionMenu = new MissionMenu(_menuHandler, interiorManager);
 
 
 
