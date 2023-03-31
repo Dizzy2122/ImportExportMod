@@ -12,7 +12,6 @@ public class ImportExportMod : Script
 {
     private ImportExportMod _importExportMod;
     private MenuHandler _menuHandler;
-    private MissionMenu missionMenu;
     private Warehouse enteredWarehouse;
     private UIMenu mainMenu;
     private UIMenu exitInteriorMenu;
@@ -38,8 +37,7 @@ public class ImportExportMod : Script
     GTA.UI.Notification.Show("ImportExportMod constructor called");
 
         _interiorManager = interiorManager;
-        _menuHandler = new MenuHandler(_interiorManager, this, availableWarehouses, ownedWarehouses);
-        missionMenu = new MissionMenu(_menuHandler, interiorManager);
+        _menuHandler = new MenuHandler(_interiorManager, this, AvailableWarehouses, OwnedWarehouses);
 
         settings = ScriptSettings.Load("ImportExportMod.ini");
         LoadSettings();
@@ -65,6 +63,7 @@ public class ImportExportMod : Script
         WarehouseInitializer.InitializeWarehouses(availableWarehouses);
         LoadOwnedWarehouses();
         SetupExitInteriorMenu();
+        
 
         // Subscribe to Tick event
         Tick += OnTick;
@@ -73,7 +72,8 @@ public class ImportExportMod : Script
         this.KeyDown += (o, e) => menuPool.ProcessKey(e.KeyCode);
     }
 
-
+public List<Warehouse> AvailableWarehouses { get; private set; }
+public List<Warehouse> OwnedWarehouses { get; private set; }
     private void OnTick(object sender, EventArgs e)
     {
         CheckPlayerInteractionWithWarehouses();

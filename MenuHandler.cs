@@ -21,7 +21,7 @@ public class MenuHandler : Script
         _interiorManager = interiorManager;
         _importExportMod = importExportMod;
         _availableWarehouses = availableWarehouses;
-
+        _menuPool = new MenuPool();
         InitializeMenu();
         SetupMainMenuItems(availableWarehouses, ownedWarehouses);
 
@@ -31,7 +31,7 @@ public class MenuHandler : Script
 
     private void InitializeMenu()
     {
-        _menuPool = new MenuPool();
+        
         _mainMenu = new UIMenu("Warehouses", "WAREHOUSE OPTIONS");
         _menuPool.Add(_mainMenu);
 
@@ -72,23 +72,35 @@ public class MenuHandler : Script
     }
 
     private void OnTick(object sender, EventArgs e)
+{
+    _menuPool.ProcessMenus();
+
+    Ped playerPed = Game.Player.Character;
+
+    // Check if the player is near any warehouse
+    foreach (var warehouse in _availableWarehouses)
     {
-        _menuPool.ProcessMenus();
+        float distanceToWarehouse = playerPed.Position.DistanceTo(warehouse.ExteriorLocation);
 
-        Ped playerPed = Game.Player.Character;
-        float distanceToLaptop = playerPed.Position.DistanceTo(_laptopLocation);
-
-        if (distanceToLaptop <= _interactionDistance)
+        if (distanceToWarehouse <= _interactionDistance)
         {
+            _currentWarehouse = warehouse;
             _mainMenu.Visible = true;
-            GTA.UI.Notification.Show("Near laptop. Menu should be visible."); // Debug notification
+            GTA.UI.Notification.Show($"Near {warehouse.Name}. Menu should be visible. Distance: {distanceToWarehouse}"); // Debug notification
+            break;
         }
         else
         {
+            _currentWarehouse = null;
             _mainMenu.Visible = false;
-            GTA.UI.Notification.Show("Away from laptop. Menu should be hidden."); // Debug notification
+            // GTA.UI.Notification.Show($"Away from {warehouse.Name}. Menu should be hidden. Distance: {distanceToWarehouse}"); // Debug notification
         }
     }
+}
+
+
+
+
         private void SetupMainMenuItems(List<Warehouse> availableWarehouses, List<Warehouse> ownedWarehouses)
     {
         UIMenuItem purchaseWarehouseItem = new UIMenuItem("Purchase Warehouse");
