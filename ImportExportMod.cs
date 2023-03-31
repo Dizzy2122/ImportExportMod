@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 
 public class ImportExportMod : Script
 {
-    private ImportExportMod _importExportMod;
     private MenuHandler _menuHandler;
     private Warehouse enteredWarehouse;
     private UIMenu mainMenu;
@@ -141,7 +140,7 @@ public List<Warehouse> OwnedWarehouses { get; private set; }
     {
         if (selectedItem == purchaseWarehouseItem)
         {
-            _importExportMod.PurchaseWarehouse();
+            _importExportMod.PurchaseWarehouse(currentWarehouse);
         }
         else if (selectedItem == enterWarehouseItem)
         {
@@ -153,6 +152,9 @@ public List<Warehouse> OwnedWarehouses { get; private set; }
         }
     }
 }
+
+
+
 
 
 

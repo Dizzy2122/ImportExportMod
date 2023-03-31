@@ -9,10 +9,16 @@ public class Initializer : Script
     private ImportExportMod _importExportMod;
 
     public Initializer()
-    {
-        _interiorManager = new InteriorManager();
-        _importExportMod = new ImportExportMod(_interiorManager);
-        _menuHandler = _importExportMod.MenuHandlerInstance;
-    }
-}
+{
+    _interiorManager = new InteriorManager();
+    _importExportMod = new ImportExportMod(_interiorManager);
+    _menuHandler = _importExportMod.MenuHandlerInstance;
 
+
+    // Add a debug notification
+    GTA.UI.Notification.Show("Initializer constructor called.");
+
+    // Subscribe to the Tick event
+    this.Tick += _menuHandler.OnTick;
+}
+}
