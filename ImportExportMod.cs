@@ -123,6 +123,7 @@ public List<Warehouse> OwnedWarehouses { get; private set; }
 
         // Attach the event handler for item selection
         mainMenu.OnItemSelect += MainMenu_OnItemSelect;
+
         
 
         // Set the initial states for the menu items
@@ -140,15 +141,15 @@ public List<Warehouse> OwnedWarehouses { get; private set; }
     {
         if (selectedItem == purchaseWarehouseItem)
         {
-            _importExportMod.PurchaseWarehouse(currentWarehouse);
+            PurchaseWarehouse(currentWarehouse);
         }
         else if (selectedItem == enterWarehouseItem)
         {
-            await _importExportMod.EnterWarehouse(currentWarehouse);
+            await EnterWarehouse(currentWarehouse);
         }
         else if (selectedItem == sellWarehouseItem)
         {
-            await _importExportMod.SellWarehouse(currentWarehouse);
+            await SellWarehouse(currentWarehouse);
         }
     }
 }
@@ -329,7 +330,7 @@ public void LoadSettings()
 
 
 
-    public void PurchaseWarehouse()
+    public void PurchaseWarehouse(Warehouse warehouse)
 {
     if (currentWarehouse == null)
     {

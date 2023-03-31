@@ -52,20 +52,16 @@ public class MenuHandler : Script
 {
     if (_currentWarehouse != null)
     {
-        if (selectedItem == purchaseWarehouseItem)
+        if (_itemToWarehouseMapping.ContainsKey(selectedItem))
         {
             _importExportMod.PurchaseWarehouse(_currentWarehouse);
-        }
-        else if (selectedItem == enterWarehouseItem)
-        {
             await _importExportMod.EnterWarehouse(_currentWarehouse);
-        }
-        else if (selectedItem == sellWarehouseItem)
-        {
             await _importExportMod.SellWarehouse(_currentWarehouse);
         }
     }
 }
+
+
 
 
     public void OnTick(object sender, EventArgs e)
