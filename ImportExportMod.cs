@@ -78,6 +78,7 @@ public List<Warehouse> OwnedWarehouses { get; private set; }
         CheckPlayerInteractionWithWarehouses();
         CheckPlayerInteractionWithExitPoint();
         menuPool.ProcessMenus();
+        _menuHandler.OnTick(sender, e);
         this.KeyDown += (o, e) => menuPool.ProcessKey(e.KeyCode);
     }
 

@@ -50,16 +50,18 @@ public class MenuHandler : Script
 
     private async void MainMenu_OnItemSelect(UIMenu sender, UIMenuItem selectedItem, int index)
 {
-    if (_currentWarehouse != null)
+    if (_importExportMod.CurrentWarehouse != null)
     {
         if (_itemToWarehouseMapping.ContainsKey(selectedItem))
         {
-            _importExportMod.PurchaseWarehouse(_currentWarehouse);
-            await _importExportMod.EnterWarehouse(_currentWarehouse);
-            await _importExportMod.SellWarehouse(_currentWarehouse);
+            _importExportMod.PurchaseWarehouse(_importExportMod.CurrentWarehouse);
+            await _importExportMod.EnterWarehouse(_importExportMod.CurrentWarehouse);
+            await _importExportMod.SellWarehouse(_importExportMod.CurrentWarehouse);
         }
     }
 }
+
+
 
 
 
@@ -69,31 +71,25 @@ public class MenuHandler : Script
     _menuPool.ProcessMenus();
 
     Ped playerPed = Game.Player.Character;
+    bool isPlayerNearWarehouse = false;
 
     // Check if the player is near any warehouse
-    bool nearWarehouse = false;
     foreach (var warehouse in _availableWarehouses)
     {
         float distanceToWarehouse = playerPed.Position.DistanceTo(warehouse.ExteriorLocation);
 
         if (distanceToWarehouse <= _interactionDistance)
         {
-            nearWarehouse = true;
             _currentWarehouse = warehouse;
-            _mainMenu.Visible = true;
+            isPlayerNearWarehouse = true;
             GTA.UI.Notification.Show($"Near {warehouse.Name}. Menu should be visible."); // Debug notification
             break;
         }
     }
 
-    if (!nearWarehouse)
-    {
-        _currentWarehouse = null;
-        _mainMenu.Visible = false;
-    }
-
-    GTA.UI.Notification.Show($"Tick event fired."); // Debug notification
+    _mainMenu.Visible = isPlayerNearWarehouse;
 }
+
 
 
 

@@ -1,4 +1,3 @@
-// Initializer.cs
 using GTA;
 using System.Collections.Generic;
 
@@ -7,7 +6,6 @@ public class Initializer : Script
     private MenuHandler _menuHandler;
     private InteriorManager _interiorManager;
     private ImportExportMod _importExportMod;
-    private SimpleMenuHandler _simpleMenuHandler;
 
     public Initializer()
     {
@@ -15,12 +13,7 @@ public class Initializer : Script
         _importExportMod = new ImportExportMod(_interiorManager);
         _menuHandler = _importExportMod.MenuHandlerInstance;
 
-        _simpleMenuHandler = new SimpleMenuHandler();
-    
-
-
-
-    // Subscribe to the Tick event
-    this.Tick += _menuHandler.OnTick;
-}
+        // Subscribe to the Tick event
+        this.Tick += _menuHandler.OnTick;
+    }
 }
