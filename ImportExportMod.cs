@@ -59,18 +59,17 @@ public class ImportExportMod : Script
         SetupWarehouseMenuItems();
 
         // Add warehouses to the availableWarehouses list
-        WarehouseInitializer.InitializeWarehouses(availableWarehouses);
+        WarehouseInitializer.InitializeWarehouses(AvailableWarehouses);
         LoadOwnedWarehouses();
         SetupExitInteriorMenu();
-        
-
-        // Subscribe to Tick event
-        this.Tick += OnTick;
-        this.Tick += _menuHandler.OnTick;
 
         // Handle menu input
         this.KeyDown += (o, e) => menuPool.ProcessKey(e.KeyCode);
     }
+public Warehouse CurrentWarehouse
+{
+    get { return currentWarehouse; }
+}
 
 public List<Warehouse> AvailableWarehouses { get; private set; }
 public List<Warehouse> OwnedWarehouses { get; private set; }
