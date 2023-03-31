@@ -160,6 +160,8 @@ public static class WarehouseInitializer
             warehouseBlip.Name = warehouse.Name;
             warehouseBlip.IsShortRange = true;
             LoadInteriorProps(warehouse);
+
+            GTA.UI.Notification.Show("Warehouses initialized: " + availableWarehouses.Count);
     }
         // Request the IPL for the warehouse interior
         Function.Call(Hash.REQUEST_IPL, commonInteriorIPLName);
