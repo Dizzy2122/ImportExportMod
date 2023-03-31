@@ -20,5 +20,6 @@ public class Initializer : Script
 
     // Subscribe to the Tick event
     this.Tick += _menuHandler.OnTick;
+    this.Tick += _importExportMod.OnTick;
 }
 }

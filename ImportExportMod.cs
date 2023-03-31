@@ -65,7 +65,8 @@ public class ImportExportMod : Script
         
 
         // Subscribe to Tick event
-        Tick += OnTick;
+        this.Tick += OnTick;
+        this.Tick += _menuHandler.OnTick;
 
         // Handle menu input
         this.KeyDown += (o, e) => menuPool.ProcessKey(e.KeyCode);
@@ -73,7 +74,7 @@ public class ImportExportMod : Script
 
 public List<Warehouse> AvailableWarehouses { get; private set; }
 public List<Warehouse> OwnedWarehouses { get; private set; }
-    private void OnTick(object sender, EventArgs e)
+    public void OnTick(object sender, EventArgs e)
     {
         CheckPlayerInteractionWithWarehouses();
         CheckPlayerInteractionWithExitPoint();
