@@ -6,6 +6,7 @@ using System.Windows.Forms;
 
 public class MissionMenu : Script
 {
+    private ImportExportMod _importExportMod;
     private Warehouse currentWarehouse;
     private UIMenuItem purchaseWarehouseItem;
     private UIMenuItem enterWarehouseItem;
@@ -17,13 +18,12 @@ public class MissionMenu : Script
     private GTA.Math.Vector3 _laptopLocation = new GTA.Math.Vector3(964.9951f, -3003.473f, -39.63989f);
     private float _interactionDistance = 2.0f;
 
-    public MissionMenu(MenuHandler menuHandler, InteriorManager interiorManager)
-    {
+    public MissionMenu(MenuHandler menuHandler, InteriorManager interiorManager)    {
         
         UIMenuItem purchaseWarehouseItem = new UIMenuItem("Purchase Warehouse");
         UIMenuItem enterWarehouseItem = new UIMenuItem("Enter Warehouse");
-        _mainMenu.AddItem(purchaseWarehouseItem);
-        _mainMenu.AddItem(enterWarehouseItem);
+        _testMenu.AddItem(purchaseWarehouseItem);
+        _testMenu.AddItem(enterWarehouseItem);
         _menuHandler = menuHandler;
         _interiorManager = interiorManager;
 
@@ -45,26 +45,26 @@ public class MissionMenu : Script
         this.Tick += OnTick;
 
         // Add event handlers for main menu item selection
-        _mainMenu.OnItemSelect += MainMenu_OnItemSelect;
+        _testMenu.OnItemSelect += MainMenu_OnItemSelect;
     }
     private async void MainMenu_OnItemSelect(UIMenu sender, UIMenuItem selectedItem, int index)
+{
+    if (currentWarehouse != null)
     {
-        if (currentWarehouse != null)
+        if (selectedItem == purchaseWarehouseItem)
         {
-            if (selectedItem == purchaseWarehouseItem)
-            {
-                await _importExportMod.PurchaseWarehouse();
-            }
-            else if (selectedItem == enterWarehouseItem)
-            {
-                await _importExportMod.EnterWarehouse(currentWarehouse);
-            }
-            else if (selectedItem == sellWarehouseItem)
-            {
-                await _importExportMod.SellWarehouse(currentWarehouse);
-            }
+            _importExportMod.PurchaseWarehouse();
+        }
+        else if (selectedItem == enterWarehouseItem)
+        {
+            await _importExportMod.EnterWarehouse(currentWarehouse);
+        }
+        else if (selectedItem == sellWarehouseItem)
+        {
+            await _importExportMod.SellWarehouse(currentWarehouse);
         }
     }
+}
 
 
 

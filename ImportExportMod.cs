@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 public class ImportExportMod : Script
 {
+    private ImportExportMod _importExportMod;
     private MenuHandler _menuHandler;
     private MissionMenu missionMenu;
     private Warehouse enteredWarehouse;
@@ -36,11 +37,9 @@ public class ImportExportMod : Script
 {
     GTA.UI.Notification.Show("ImportExportMod constructor called");
 
-    _interiorManager = interiorManager;
-    _menuHandler = new MenuHandler(_interiorManager, this, availableWarehouses, ownedWarehouses);
-    missionMenu = new MissionMenu(_menuHandler, interiorManager);
-
-
+        _interiorManager = interiorManager;
+        _menuHandler = new MenuHandler(_interiorManager, this, availableWarehouses, ownedWarehouses);
+        missionMenu = new MissionMenu(_menuHandler, interiorManager);
 
         settings = ScriptSettings.Load("ImportExportMod.ini");
         LoadSettings();
@@ -142,19 +141,22 @@ public class ImportExportMod : Script
     {
         if (selectedItem == purchaseWarehouseItem)
         {
-            PurchaseWarehouse();
+            _importExportMod.PurchaseWarehouse();
         }
         else if (selectedItem == enterWarehouseItem)
         {
-            // Apply the 'await' operator and call EnterWarehouse with the currentWarehouse parameter
-            await _interiorManager.EnterWarehouse(currentWarehouse);
+            await _importExportMod.EnterWarehouse(currentWarehouse);
         }
         else if (selectedItem == sellWarehouseItem)
         {
-            SellWarehouse();
+            await _importExportMod.SellWarehouse(currentWarehouse);
         }
     }
 }
+
+
+
+
 
 
     private void UpdateMenuOptions()
@@ -325,29 +327,7 @@ public void LoadSettings()
 
 
 
-    private void PurchaseWarehouse()
-    {
-        if (currentWarehouse == null)
-        {
-            GTA.UI.Notification.Show("Current warehouse is null.");
-            return;
-        }
-
-        if (Game.Player.Money >= currentWarehouse.Price)
-        {
-            Game.Player.Money -= currentWarehouse.Price;
-            ownedWarehouses.Add(currentWarehouse);
-            GTA.UI.Notification.Show($"You have purchased {currentWarehouse.Name}.");
-            UpdateMenuOptions();
-        }
-        else
-        {
-            GTA.UI.Notification.Show("You do not have enough money to purchase this warehouse.");
-    }
-}
-
-
-private void SellWarehouse()
+    public void PurchaseWarehouse()
 {
     if (currentWarehouse == null)
     {
@@ -355,19 +335,41 @@ private void SellWarehouse()
         return;
     }
 
-    if (ownedWarehouses.Contains(currentWarehouse))
+    if (Game.Player.Money >= currentWarehouse.Price)
     {
-        int sellPrice = (int)(currentWarehouse.Price * 0.75); // Adjust the selling price percentage as desired
-        Game.Player.Money += sellPrice;
-        ownedWarehouses.Remove(currentWarehouse);
-        GTA.UI.Notification.Show($"You have sold {currentWarehouse.Name} for ${sellPrice}.");
+        Game.Player.Money -= currentWarehouse.Price;
+        ownedWarehouses.Add(currentWarehouse);
+        GTA.UI.Notification.Show($"You have purchased {currentWarehouse.Name}.");
         UpdateMenuOptions();
     }
     else
     {
-        GTA.UI.Notification.Show("You do not own this warehouse.");
+        GTA.UI.Notification.Show("You do not have enough money to purchase this warehouse.");
     }
 }
+
+    public async Task SellWarehouse(Warehouse warehouse)
+    {
+        if (currentWarehouse == null)
+        {
+            GTA.UI.Notification.Show("Current warehouse is null.");
+            return;
+        }
+
+        if (ownedWarehouses.Contains(currentWarehouse))
+        {
+            int sellPrice = (int)(currentWarehouse.Price * 0.75); // Adjust the selling price percentage as desired
+            Game.Player.Money += sellPrice;
+            ownedWarehouses.Remove(currentWarehouse);
+            GTA.UI.Notification.Show($"You have sold {currentWarehouse.Name} for ${sellPrice}.");
+            UpdateMenuOptions();
+        }
+        else
+        {
+            GTA.UI.Notification.Show("You do not own this warehouse.");
+        }
+        await Task.CompletedTask;
+    }
 
 
 

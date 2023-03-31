@@ -16,13 +16,14 @@ public class MenuHandler : Script
     private GTA.Math.Vector3 _laptopLocation = new GTA.Math.Vector3(964.9951f, -3003.473f, -39.63989f);
     private float _interactionDistance = 2.0f;
 
-    public MenuHandler(InteriorManager interiorManager, ImportExportMod importExportMod, List<Warehouse> availableWarehouses)
+    public MenuHandler(InteriorManager interiorManager, ImportExportMod importExportMod, List<Warehouse> availableWarehouses, List<Warehouse> ownedWarehouses)
     {
         _interiorManager = interiorManager;
         _importExportMod = importExportMod;
         _availableWarehouses = availableWarehouses;
 
         InitializeMenu();
+        SetupMainMenuItems(availableWarehouses, ownedWarehouses);
 
         // Subscribe to the Tick event
         this.Tick += OnTick;
@@ -88,4 +89,12 @@ public class MenuHandler : Script
             GTA.UI.Notification.Show("Away from laptop. Menu should be hidden."); // Debug notification
         }
     }
+        private void SetupMainMenuItems(List<Warehouse> availableWarehouses, List<Warehouse> ownedWarehouses)
+    {
+        UIMenuItem purchaseWarehouseItem = new UIMenuItem("Purchase Warehouse");
+        UIMenuItem enterWarehouseItem = new UIMenuItem("Enter Warehouse");
+        _mainMenu.AddItem(purchaseWarehouseItem);
+        _mainMenu.AddItem(enterWarehouseItem);
+    }
 }
+    
