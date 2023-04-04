@@ -460,11 +460,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\bower\\Desktop\\myScript2\\ImportExportMod.csproj",
+      "projectUniqueName": "C:\\Users\\bower\\Desktop\\myScriptV4\\ImportExportMod.csproj",
       "projectName": "ImportExportMod",
-      "projectPath": "C:\\Users\\bower\\Desktop\\myScript2\\ImportExportMod.csproj",
+      "projectPath": "C:\\Users\\bower\\Desktop\\myScriptV4\\ImportExportMod.csproj",
       "packagesPath": "C:\\Users\\bower\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\bower\\Desktop\\myScript2\\obj\\",
+      "outputPath": "C:\\Users\\bower\\Desktop\\myScriptV4\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\bower\\AppData\\Roaming\\NuGet\\NuGet.Config"

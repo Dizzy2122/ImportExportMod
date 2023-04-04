@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "+cnqCq5i0WTAfuE+b6OL0SAueJhKv6JZX2TJbDuszsRNnRV5xuXhp5jG2XK5fOF8/WDtM7yeEm/uSc6f+Viqyg==",
+  "dgSpecHash": "lznoRwhe5AOop9LYnSkZHAN1g58NH0gYQGmfaC8LXX9RdtrnWbsnHmusMpEXndVFoThAVulCR267AleKhFpnwA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\bower\\Desktop\\myScript2\\ImportExportMod.csproj",
+  "projectFilePath": "C:\\Users\\bower\\Desktop\\myScriptV4\\ImportExportMod.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\bower\\.nuget\\packages\\microsoft.netframework.referenceassemblies\\1.0.2\\microsoft.netframework.referenceassemblies.1.0.2.nupkg.sha512",
     "C:\\Users\\bower\\.nuget\\packages\\microsoft.netframework.referenceassemblies.net48\\1.0.2\\microsoft.netframework.referenceassemblies.net48.1.0.2.nupkg.sha512",
