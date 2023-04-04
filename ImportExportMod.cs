@@ -1,418 +1,142 @@
 // ImportExportMod.cs
 using GTA;
 using GTA.Native;
-using System;
-using System.Collections.Generic;
 using NativeUI;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Windows.Forms;
+using System;
+using GTA.Math;
 
-
-public class ImportExportMod : Script
+namespace ImportExportModNamespace
 {
-    private MenuHandler _menuHandler;
-    private Warehouse enteredWarehouse;
-    private UIMenu mainMenu;
-    private UIMenu exitInteriorMenu;
-    private List<Warehouse> availableWarehouses;
-    private List<Warehouse> ownedWarehouses;
-    private Warehouse currentWarehouse;
-    private UIMenuItem purchaseWarehouseItem;
-    private UIMenuItem enterWarehouseItem;
-    private UIMenuItem sellWarehouseItem;
-    private MenuPool menuPool;
-    private List<string> addonCarModelNames;
-    private ScriptSettings settings;
-    private int carSetting;
-    private InteriorManager _interiorManager;
-    public MenuHandler MenuHandlerInstance
+    public class ImportExportMod : Script
+    {
+        // Declare managers here
+        private WarehouseManager warehouseManager;
+        private CarSourceManager carSourceManager;
+        private CustomizationManager customizationManager;
+
+        // Declare 'menuPool' and 'warehouseMenu' as class-level variables
+        private MenuPool menuPool;
+        private UIMenu warehouseMenu;
+
+        public ImportExportMod()
+        {
+            // Initialize managers here
+            warehouseManager = new WarehouseManager();
+            carSourceManager = new CarSourceManager();
+            customizationManager = new CustomizationManager();
+
+            warehouseManager.CreateBlips();
+
+            // Initialize MenuPool
+            menuPool = new MenuPool();
+
+            // Setup warehouse menu
+            SetupWarehouseMenu();
+
+            // Subscribe to the Tick event
+            Tick += OnTick;
+
+            // Subscribe to the KeyUp event
+            KeyUp += OnKeyUp;
+
+            // Other initialization code, including setting up menus, key bindings, etc.
+        }
+
+        private void OnTick(object sender, EventArgs e)
 {
-    get { return _menuHandler; }
-}
+    menuPool.ProcessMenus();
+    warehouseManager.UpdateNearestWarehouse();
 
+    float distanceToNearestWarehouse = Game.Player.Character.Position.DistanceTo(warehouseManager.NearestWarehouseLocation);
 
-    public ImportExportMod(InteriorManager interiorManager)
-{
-    GTA.UI.Notification.Show("ImportExportMod constructor called");
-
-        _interiorManager = interiorManager;
-        _menuHandler = new MenuHandler(_interiorManager, this, AvailableWarehouses, OwnedWarehouses);
-
-        settings = ScriptSettings.Load("ImportExportMod.ini");
-        LoadSettings();
-
-        // Interior Setup
-        interiorManager = new InteriorManager();
-
-        // Initialize available and owned warehouses
-        availableWarehouses = new List<Warehouse>();
-        ownedWarehouses = new List<Warehouse>();
-
-        // Initialize the menu pool and main menu
-        menuPool = new MenuPool();
-        mainMenu = new UIMenu("Warehouse Manager", "Select an option:");
-        
-        
-        menuPool.Add(mainMenu);
-
-        // Create menu items
-        SetupWarehouseMenuItems();
-
-        // Add warehouses to the availableWarehouses list
-        WarehouseInitializer.InitializeWarehouses(AvailableWarehouses);
-        LoadOwnedWarehouses();
-        SetupExitInteriorMenu();
-
-        // Handle menu input
-        this.KeyDown += (o, e) => menuPool.ProcessKey(e.KeyCode);
-    }
-public Warehouse CurrentWarehouse
-{
-    get { return currentWarehouse; }
-}
-
-public List<Warehouse> AvailableWarehouses { get; private set; }
-public List<Warehouse> OwnedWarehouses { get; private set; }
-    public void OnTick(object sender, EventArgs e)
+    if (distanceToNearestWarehouse < 5f)
     {
-        CheckPlayerInteractionWithWarehouses();
-        CheckPlayerInteractionWithExitPoint();
-        menuPool.ProcessMenus();
-        _menuHandler.OnTick(sender, e);
-        this.KeyDown += (o, e) => menuPool.ProcessKey(e.KeyCode);
-    }
+        bool isOwned = warehouseManager.OwnedWarehouseLocation == warehouseManager.NearestWarehouseLocation;
 
-    private void CheckPlayerInteractionWithWarehouses()
-    {
-        var player = Game.Player.Character;
-        currentWarehouse = null;
-        bool isCloseToAnyWarehouse = false;
+        warehouseMenu.MenuItems[0].Enabled = !isOwned;
+        warehouseMenu.MenuItems[1].Enabled = isOwned;
+        warehouseMenu.MenuItems[2].Enabled = isOwned;
 
-        foreach (var warehouse in availableWarehouses)
+        if (!warehouseMenu.Visible)
         {
-            if (player.Position.DistanceTo(warehouse.ExteriorLocation) < 5.0f)
-            {
-                isCloseToAnyWarehouse = true;
-                currentWarehouse = warehouse;
-                break;
-            }
+            warehouseMenu.Visible = true;
         }
-
-        if (isCloseToAnyWarehouse)
-        {
-            if (!mainMenu.Visible)
-            {
-                mainMenu.Visible = true;
-                UpdateMenuOptions();
-            }
-        }
-        else
-        {
-            mainMenu.Visible = false;
-        }
-    }
-
-    private void SetupWarehouseMenuItems()
-    {
-        sellWarehouseItem = new UIMenuItem("Sell Warehouse");
-        purchaseWarehouseItem = new UIMenuItem("Purchase Warehouse");
-        enterWarehouseItem = new UIMenuItem("Enter Warehouse");
-
-        mainMenu.AddItem(sellWarehouseItem);
-        mainMenu.AddItem(purchaseWarehouseItem);
-        mainMenu.AddItem(enterWarehouseItem);
-
-        // Attach the event handler for item selection
-        mainMenu.OnItemSelect += MainMenu_OnItemSelect;
-
-        
-
-        // Set the initial states for the menu items
-        purchaseWarehouseItem.Enabled = false;
-        enterWarehouseItem.Enabled = false;
-        sellWarehouseItem.Enabled = false;
-
-        // Set the main menu to be initially invisible
-        mainMenu.Visible = false;
-    }
-
-    private async void MainMenu_OnItemSelect(UIMenu sender, UIMenuItem selectedItem, int index)
-{
-    if (currentWarehouse != null)
-    {
-        if (selectedItem == purchaseWarehouseItem)
-        {
-            PurchaseWarehouse(currentWarehouse);
-        }
-        else if (selectedItem == enterWarehouseItem)
-        {
-            await EnterWarehouse(currentWarehouse);
-        }
-        else if (selectedItem == sellWarehouseItem)
-        {
-            await SellWarehouse(currentWarehouse);
-        }
-    }
-}
-
-
-
-
-
-
-
-
-
-    private void UpdateMenuOptions()
-    {
-                if (currentWarehouse != null)
-        {
-            if (!ownedWarehouses.Contains(currentWarehouse))
-            {
-                purchaseWarehouseItem.Enabled = true;
-                enterWarehouseItem.Enabled = false;
-                sellWarehouseItem.Enabled = false;
-                SetSelectedMenuItem(mainMenu, purchaseWarehouseItem);
-            }
-            else
-            {
-                purchaseWarehouseItem.Enabled = false;
-                enterWarehouseItem.Enabled = true;
-                sellWarehouseItem.Enabled = true;
-                SetSelectedMenuItem(mainMenu, enterWarehouseItem);
-            }
-        }
-    }
-
-    private void SetSelectedMenuItem(UIMenu menu, UIMenuItem item)
-    {
-        int index = menu.MenuItems.IndexOf(item);
-        while (menu.CurrentSelection != index)
-        {
-            menu.GoDown();
-        }
-    }
-
-    private void SetupExitInteriorMenu()
-    {
-        exitInteriorMenu = new UIMenu("Exit Warehouse", "Select an option:");
-        menuPool.Add(exitInteriorMenu);
-
-        UIMenuItem exitWarehouseItem = new UIMenuItem("Exit Warehouse");
-        exitInteriorMenu.AddItem(exitWarehouseItem);
-        exitInteriorMenu.OnItemSelect += ExitMenu_OnItemSelect;
-        exitInteriorMenu.Visible = false;
-    }
-
-    private void ExitMenu_OnItemSelect(UIMenu sender, UIMenuItem selectedItem, int index)
-    {
-        if (selectedItem.Text == "Exit Warehouse")
-        {
-            Game.Player.Character.Position = enteredWarehouse.ExteriorLocation;
-            exitInteriorMenu.Visible = false;
-            enteredWarehouse = null;
-        }
-    }
-
-    private void CheckPlayerInteractionWithExitPoint()
-    {
-        if (enteredWarehouse != null)
-        {
-            var player = Game.Player.Character;
-            if (player.Position.DistanceTo(enteredWarehouse.InteriorLocation) < 5.0f)
-            {
-                if (!exitInteriorMenu.Visible)
-                {
-                    exitInteriorMenu.Visible = true;
-                }
-            }
-            else
-            {
-                exitInteriorMenu.Visible = false;
-            }
-        }
-    }
-
-    public async Task EnterWarehouse(Warehouse warehouse)
-{
-    GTA.UI.Notification.Show("Loading interior IPL...");
-    await IPLHelper.LoadIPLAsync(warehouse.InteriorIPLName);
-    GTA.UI.Notification.Show("Interior IPL loaded.");
-
-    // Spawn a temporary invisible car
-    Vehicle tempCar = World.CreateVehicle(warehouse.TempCarModel, warehouse.InteriorLocation);
-
-    tempCar.IsVisible = false;
-    tempCar.IsPersistent = false;
-    Game.Player.Character.SetIntoVehicle(tempCar, VehicleSeat.Driver);
-
-    // Add a delay to give the game some time to load the interior properly
-    await Delay(5000);
-
-    // Teleport the player to the interior location
-    GTA.UI.Notification.Show("Teleporting player...");
-    tempCar.Position = warehouse.InteriorLocation;
-
-    // Add another delay to make sure the player is in the correct position
-    await Delay(2000);
-
-    // Remove the player from the temporary car and delete the car
-    Game.Player.Character.Task.LeaveVehicle();
-    tempCar.Delete();
-    WarehouseInitializer.LoadInteriorProps(warehouse);
-}
-
-
-
-
-
-private async Task Delay(int milliseconds)
-{
-    await Task.Delay(milliseconds);
-}
-
-
-public void LoadSettings()
-    {
-        // Read addon car model names from INI file
-        addonCarModelNames = settings.GetValue("CARS", "AddonCarModelNames", new List<string>()).ToList();
-
-        // Read the setting to use only addon cars, only GTA default cars, or a mix of both
-        carSetting = settings.GetValue<int>("SETTINGS", "CarSetting", 0);
-
-        // Other initialization code goes here
-    }
-
-
-
-    // Add your other methods such as PurchaseWarehouse, SellWarehouse, and LoadOwnedWarehouses.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public void PurchaseWarehouse(Warehouse warehouse)
-{
-    if (currentWarehouse == null)
-    {
-        GTA.UI.Notification.Show("Current warehouse is null.");
-        return;
-    }
-
-    if (Game.Player.Money >= currentWarehouse.Price)
-    {
-        Game.Player.Money -= currentWarehouse.Price;
-        ownedWarehouses.Add(currentWarehouse);
-        GTA.UI.Notification.Show($"You have purchased {currentWarehouse.Name}.");
-        UpdateMenuOptions();
     }
     else
     {
-        GTA.UI.Notification.Show("You do not have enough money to purchase this warehouse.");
+        if (warehouseMenu.Visible)
+        {
+            warehouseMenu.Visible = false;
+        }
+    }
+
+    GTA.UI.Notification.Show($"Menu Items: Purchase: {warehouseMenu.MenuItems[0].Enabled}, Sell: {warehouseMenu.MenuItems[1].Enabled}, Enter: {warehouseMenu.MenuItems[2].Enabled}");
+
+    // Check for the F9 key
+    if (Game.IsKeyPressed(Keys.F9)) // Probably remove this when the script is final
+    {
+        // Remove all warehouse blips
+        warehouseManager.RemoveBlips();
     }
 }
 
-    public async Task SellWarehouse(Warehouse warehouse)
-    {
-        if (currentWarehouse == null)
+
+
+        private void OnKeyUp(object sender, KeyEventArgs e)
         {
-            GTA.UI.Notification.Show("Current warehouse is null.");
-            return;
+            if (e.KeyCode == Keys.Delete)
+            {
+                // Remove all warehouse blips
+                warehouseManager.RemoveBlips();
+            }
         }
 
-        if (ownedWarehouses.Contains(currentWarehouse))
-        {
-            int sellPrice = (int)(currentWarehouse.Price * 0.75); // Adjust the selling price percentage as desired
-            Game.Player.Money += sellPrice;
-            ownedWarehouses.Remove(currentWarehouse);
-            GTA.UI.Notification.Show($"You have sold {currentWarehouse.Name} for ${sellPrice}.");
-            UpdateMenuOptions();
-        }
-        else
-        {
-            GTA.UI.Notification.Show("You do not own this warehouse.");
-        }
-        await Task.CompletedTask;
-    }
-
-
-
-
-
-private void SaveOwnedWarehouses()
-{
-    ScriptSettings config = ScriptSettings.Load("ImportExportMod.ini");
-    config.SetValue("Warehouses", "OwnedWarehouseCount", ownedWarehouses.Count);
-    int warehouseIndex = 0;
-
-    foreach (Warehouse warehouse in ownedWarehouses)
-    {
-        config.SetValue("Warehouses", $"OwnedWarehouse{warehouseIndex}", warehouse.Name);
-        warehouseIndex++;
-    }
-
-    config.Save();
-}
-
-private void LoadOwnedWarehouses()
-{
-    ScriptSettings config = ScriptSettings.Load("ImportExportMod.ini");
-    int ownedWarehouseCount = config.GetValue<int>("Warehouses", "OwnedWarehouseCount", 0);
-
-    for (int i = 0; i < ownedWarehouseCount; i++)
-    {
-        string warehouseName = config.GetValue<string>("Warehouses", $"OwnedWarehouse{i}", "");
-
-        // Find the warehouse with the matching name
-        Warehouse warehouse = availableWarehouses.FirstOrDefault(w => w.Name == warehouseName);
         
-        if (warehouse != null)
+
+
+
+        private void SetupWarehouseMenu()
         {
-            ownedWarehouses.Add(warehouse);
+            warehouseMenu = new UIMenu("Warehouse", "OPTIONS");
+            menuPool.Add(warehouseMenu);
+
+            UIMenuItem purchaseItem = new UIMenuItem("Purchase Warehouse");
+            UIMenuItem sellItem = new UIMenuItem("Sell Warehouse");
+            UIMenuItem enterItem = new UIMenuItem("Enter Warehouse");
+
+            warehouseMenu.AddItem(purchaseItem);
+            warehouseMenu.AddItem(sellItem);
+            warehouseMenu.AddItem(enterItem);
+
+            warehouseMenu.OnItemSelect += (sender, item, index) =>
+            {
+                GTA.UI.Notification.Show($"Item selected: {item.Text}");
+
+                if (item == purchaseItem)
+                {
+                    GTA.UI.Notification.Show("Purchase Warehouse selected");
+                    warehouseManager.SetOwnedWarehouseLocation(warehouseManager.NearestWarehouseLocation);
+
+                    warehouseManager.SetOwnedWarehouseBlip(World.CreateBlip(warehouseManager.NearestWarehouseLocation));
+
+                    warehouseManager.UpdateOwnedWarehouseBlip();
+                }
+                else if (item == sellItem)
+                {
+                    GTA.UI.Notification.Show("Sell Warehouse selected");
+                    warehouseManager.RemoveOwnedWarehouse();
+
+                    warehouseManager.UpdateOwnedWarehouseBlip();
+                }
+                else if (item == enterItem)
+                {
+                    GTA.UI.Notification.Show("Enter Warehouse selected");
+                    // Code to enter the warehouse
+                }
+            };
+
+            warehouseMenu.RefreshIndex();
         }
     }
 }
-
-}
-
-
