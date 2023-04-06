@@ -6,9 +6,8 @@ using System;
 using GTA.Math;
 using System.Collections.Generic;
 using System.Reflection;
-using System.IO;
 using System.Threading.Tasks;
-
+using System.IO;
 
 namespace ImportExportModNamespace
 {
@@ -27,15 +26,13 @@ namespace ImportExportModNamespace
 
         public ImportExportMod()
         {
-            StartAsync().ConfigureAwait(false);
-
+            GTA.UI.Notification.Show("ImportExportMod script has started.");
             _interior = new WarehouseInterior();
 
             menuPool = new MenuPool();
 
             _interiorStyles = new InteriorStyles(menuPool, _interior);
 
-            ModPath = GetGTAInstallationFolder();
             _carSourceManager = new CarSourceManager(ModPath);
 
             SetupWarehouseMenu();
@@ -43,62 +40,15 @@ namespace ImportExportModNamespace
 
             Tick += OnTick;
             KeyUp += OnKeyUp;
-
-
         }
 
-
-        private async Task StartAsync()
-        {
-            GTA.UI.Notification.Show("ImportExportMod script has started.");
-            await Delay(5000);
-
-            _interior = new WarehouseInterior();
-
-            menuPool = new MenuPool();
-            _interiorStyles = new InteriorStyles(menuPool, _interior);
-
-            ModPath = GetGTAInstallationFolder();
-            await Delay(1000);
-            GTA.UI.Notification.Show($"ModPath: {ModPath}");
-            
-            _carSourceManager = new CarSourceManager(ModPath);
-            SetupWarehouseMenu();
-            SetupInteriorMenus();
-        }
-
-        private async Task Delay(int milliseconds)
-        {
-            DateTime end = DateTime.UtcNow.AddMilliseconds(milliseconds);
-            while (DateTime.UtcNow < end)
-            {
-                await Task.Yield();
-            }
-        }
-
-
-
-        private string GetGTAInstallationFolder()
-        {
-            string gtaExeName = "GTA5.exe";
-            string searchPath = Path.GetPathRoot(Environment.SystemDirectory);
-            string[] files = Directory.GetFiles(searchPath, gtaExeName, SearchOption.AllDirectories);
-            if (files.Length > 0)
-            {
-                return Path.GetDirectoryName(files[0]);
-            }
-            else
-            {
-                throw new FileNotFoundException("GTAV installation folder not found.");
-            }
-        }
-
-
+        // ... (rest of the code)
 
         private void OnTick(object sender, EventArgs e)
         {
             menuPool.ProcessMenus();
-
+            CheckPlayerProximity().ConfigureAwait(false);
+            
             Vector3 exitWarehouseLocation = new Vector3(970.7842f, -2987.536f, -39.6470f);
             Vector3 laptopLocation = new Vector3(965.0377f, -3003.491f, -39.6399f);
 
@@ -220,6 +170,39 @@ namespace ImportExportModNamespace
 
             laptopMenu.RefreshIndex();
         }
+
+        private async Task CheckPlayerProximity()
+{
+    Vector3 exitWarehouseLocation = new Vector3(970.7842f, -2987.536f, -39.6470f);
+    Vector3 laptopLocation = new Vector3(965.0377f, -3003.491f, -39.6399f);
+
+    float distanceToExitWarehouse = Game.Player.Character.Position.DistanceTo(exitWarehouseLocation);
+    float distanceToLaptop = Game.Player.Character.Position.DistanceTo(laptopLocation);
+
+    if (distanceToExitWarehouse < 3f && !exitWarehouseMenu.Visible)
+    {
+        exitWarehouseMenu.Visible = true;
+        GTA.UI.Notification.Show("Exit Warehouse Menu should be visible.");
+    }
+    else if (distanceToExitWarehouse >= 3f && exitWarehouseMenu.Visible)
+    {
+        exitWarehouseMenu.Visible = false;
+    }
+
+    if (distanceToLaptop < 2f && !laptopMenu.Visible)
+    {
+        laptopMenu.Visible = true;
+        GTA.UI.Notification.Show("Laptop Menu should be visible.");
+    }
+    else if (distanceToLaptop >= 2f && laptopMenu.Visible)
+    {
+        laptopMenu.Visible = false;
+    }
+
+    await Task.FromResult(0);
+}
+
+
     }
 }
 
