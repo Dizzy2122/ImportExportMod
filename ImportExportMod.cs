@@ -1,100 +1,140 @@
-// ImportExportMod.cs
 using GTA;
 using GTA.Native;
 using NativeUI;
 using System.Windows.Forms;
 using System;
 using GTA.Math;
+using System.Collections.Generic;
+using System.Reflection;
+using System.IO;
+using System.Threading.Tasks;
+
 
 namespace ImportExportModNamespace
 {
     public class ImportExportMod : Script
     {
-        // Declare managers here
-        private WarehouseManager warehouseManager;
-        private CarSourceManager carSourceManager;
-        private CustomizationManager customizationManager;
+        public static string ModPath { get; private set; }
 
-        // Declare 'menuPool' and 'warehouseMenu' as class-level variables
+        private CarSourceManager _carSourceManager;
+        private InteriorStyles _interiorStyles;
+        private WarehouseInterior _interior;
+
         private MenuPool menuPool;
         private UIMenu warehouseMenu;
+        private UIMenu exitWarehouseMenu;
+        private UIMenu laptopMenu;
 
         public ImportExportMod()
         {
-            // Initialize managers here
-            warehouseManager = new WarehouseManager();
-            carSourceManager = new CarSourceManager();
-            customizationManager = new CustomizationManager();
+            StartAsync().ConfigureAwait(false);
 
-            warehouseManager.CreateBlips();
+            _interior = new WarehouseInterior();
 
-            // Initialize MenuPool
             menuPool = new MenuPool();
 
-            // Setup warehouse menu
+            _interiorStyles = new InteriorStyles(menuPool, _interior);
+
+            ModPath = GetGTAInstallationFolder();
+            _carSourceManager = new CarSourceManager(ModPath);
+
             SetupWarehouseMenu();
+            SetupInteriorMenus();
 
-            // Subscribe to the Tick event
             Tick += OnTick;
-
-            // Subscribe to the KeyUp event
             KeyUp += OnKeyUp;
 
-            // Other initialization code, including setting up menus, key bindings, etc.
+
         }
+
+
+        private async Task StartAsync()
+        {
+            GTA.UI.Notification.Show("ImportExportMod script has started.");
+            await Delay(5000);
+
+            _interior = new WarehouseInterior();
+
+            menuPool = new MenuPool();
+            _interiorStyles = new InteriorStyles(menuPool, _interior);
+
+            ModPath = GetGTAInstallationFolder();
+            await Delay(1000);
+            GTA.UI.Notification.Show($"ModPath: {ModPath}");
+            
+            _carSourceManager = new CarSourceManager(ModPath);
+            SetupWarehouseMenu();
+            SetupInteriorMenus();
+        }
+
+        private async Task Delay(int milliseconds)
+        {
+            DateTime end = DateTime.UtcNow.AddMilliseconds(milliseconds);
+            while (DateTime.UtcNow < end)
+            {
+                await Task.Yield();
+            }
+        }
+
+
+
+        private string GetGTAInstallationFolder()
+        {
+            string gtaExeName = "GTA5.exe";
+            string searchPath = Path.GetPathRoot(Environment.SystemDirectory);
+            string[] files = Directory.GetFiles(searchPath, gtaExeName, SearchOption.AllDirectories);
+            if (files.Length > 0)
+            {
+                return Path.GetDirectoryName(files[0]);
+            }
+            else
+            {
+                throw new FileNotFoundException("GTAV installation folder not found.");
+            }
+        }
+
+
 
         private void OnTick(object sender, EventArgs e)
-{
-    menuPool.ProcessMenus();
-    warehouseManager.UpdateNearestWarehouse();
-
-    float distanceToNearestWarehouse = Game.Player.Character.Position.DistanceTo(warehouseManager.NearestWarehouseLocation);
-
-    if (distanceToNearestWarehouse < 5f)
-    {
-        bool isOwned = warehouseManager.OwnedWarehouseLocation == warehouseManager.NearestWarehouseLocation;
-
-        warehouseMenu.MenuItems[0].Enabled = !isOwned;
-        warehouseMenu.MenuItems[1].Enabled = isOwned;
-        warehouseMenu.MenuItems[2].Enabled = isOwned;
-
-        if (!warehouseMenu.Visible)
         {
-            warehouseMenu.Visible = true;
+            menuPool.ProcessMenus();
+
+            Vector3 exitWarehouseLocation = new Vector3(970.7842f, -2987.536f, -39.6470f);
+            Vector3 laptopLocation = new Vector3(965.0377f, -3003.491f, -39.6399f);
+
+            float distanceToExitWarehouse = Game.Player.Character.Position.DistanceTo(exitWarehouseLocation);
+            float distanceToLaptop = Game.Player.Character.Position.DistanceTo(laptopLocation);
+
+            if (distanceToExitWarehouse < 3f && !exitWarehouseMenu.Visible)
+            {
+                exitWarehouseMenu.Visible = true;
+                GTA.UI.Notification.Show("Exit Warehouse Menu should be visible.");
+            }
+            else if (distanceToExitWarehouse >= 3f && exitWarehouseMenu.Visible)
+            {
+                exitWarehouseMenu.Visible = false;
+            }
+
+            if (distanceToLaptop < 2f && !laptopMenu.Visible)
+            {
+                laptopMenu.Visible = true;
+                GTA.UI.Notification.Show("Laptop Menu should be visible.");
+            }
+            else if (distanceToLaptop >= 2f && laptopMenu.Visible)
+            {
+                laptopMenu.Visible = false;
+            }
         }
-    }
-    else
-    {
-        if (warehouseMenu.Visible)
-        {
-            warehouseMenu.Visible = false;
-        }
-    }
-
-    GTA.UI.Notification.Show($"Menu Items: Purchase: {warehouseMenu.MenuItems[0].Enabled}, Sell: {warehouseMenu.MenuItems[1].Enabled}, Enter: {warehouseMenu.MenuItems[2].Enabled}");
-
-    // Check for the F9 key
-    if (Game.IsKeyPressed(Keys.F9)) // Probably remove this when the script is final
-    {
-        // Remove all warehouse blips
-        warehouseManager.RemoveBlips();
-    }
-}
-
 
 
         private void OnKeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Delete)
+            if (e.KeyCode == Keys.F9)
             {
-                // Remove all warehouse blips
-                warehouseManager.RemoveBlips();
+                _interior.LoadInteriorIPLs();
+                Game.Player.Character.Position = new Vector3(970.7842f, -2987.536f, -39.6470f); // Replace with the actual interior coordinates
             }
         }
-
-        
-
-
 
         private void SetupWarehouseMenu()
         {
@@ -111,32 +151,75 @@ namespace ImportExportModNamespace
 
             warehouseMenu.OnItemSelect += (sender, item, index) =>
             {
-                GTA.UI.Notification.Show($"Item selected: {item.Text}");
-
                 if (item == purchaseItem)
                 {
-                    GTA.UI.Notification.Show("Purchase Warehouse selected");
-                    warehouseManager.SetOwnedWarehouseLocation(warehouseManager.NearestWarehouseLocation);
-
-                    warehouseManager.SetOwnedWarehouseBlip(World.CreateBlip(warehouseManager.NearestWarehouseLocation));
-
-                    warehouseManager.UpdateOwnedWarehouseBlip();
+                    // Code to purchase a warehouse
                 }
                 else if (item == sellItem)
                 {
-                    GTA.UI.Notification.Show("Sell Warehouse selected");
-                    warehouseManager.RemoveOwnedWarehouse();
-
-                    warehouseManager.UpdateOwnedWarehouseBlip();
+                    // Code to sell a warehouse
                 }
                 else if (item == enterItem)
                 {
-                    GTA.UI.Notification.Show("Enter Warehouse selected");
-                    // Code to enter the warehouse
+                    // Code to enter a warehouse
                 }
             };
 
             warehouseMenu.RefreshIndex();
         }
+
+        private void SetupInteriorMenus()
+        {
+            // Setup exit warehouse menu
+            exitWarehouseMenu = new UIMenu("Warehouse", "EXIT");
+            menuPool.Add(exitWarehouseMenu);
+
+            UIMenuItem exitItem = new UIMenuItem("Exit Warehouse");
+            exitWarehouseMenu.AddItem(exitItem);
+
+            exitWarehouseMenu.OnItemSelect += (sender, item, index) =>
+            {
+                if (item == exitItem)
+                {
+                    // Code to exit the warehouse
+                }
+            };
+
+            exitWarehouseMenu.RefreshIndex();
+
+            // Setup laptop menu
+            laptopMenu = new UIMenu("Laptop", "OPTIONS");
+            menuPool.Add(laptopMenu);
+
+            UIMenuItem sourceVehicleItem = new UIMenuItem("Source a Vehicle");
+            UIMenuItem sellWarehouseVehicleItem = new UIMenuItem("Sell Warehouse Vehicle");
+            UIMenuItem customizeWarehouseItem = new UIMenuItem("Customize Warehouse");
+
+            laptopMenu.AddItem(sourceVehicleItem);
+            laptopMenu.AddItem(sellWarehouseVehicleItem);
+            laptopMenu.AddItem(customizeWarehouseItem);
+
+            laptopMenu.OnItemSelect += (sender, item, index) =>
+            {
+                if (item == sourceVehicleItem)
+            {
+                // Code to source a vehicle
+                CarSourceManager carSourceManager = new CarSourceManager(ModPath);
+                carSourceManager.StartRandomScenario();
+            }
+            else if (item == sellWarehouseVehicleItem)
+            {
+                // Code to sell warehouse vehicle
+            }
+            else if (item == customizeWarehouseItem)
+            {
+                _interiorStyles.ShowMenu(laptopMenu);
+            }
+        };
+
+
+            laptopMenu.RefreshIndex();
+        }
     }
 }
+

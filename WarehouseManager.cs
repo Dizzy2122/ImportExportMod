@@ -1,4 +1,5 @@
 // WarehouseManager.cs
+using System.IO;
 using System;
 using GTA;
 using GTA.Native;
@@ -26,6 +27,7 @@ namespace ImportExportModNamespace
         public Vector3 NearestWarehouseLocation => NearestWarehouse?.Location ?? Vector3.Zero;
         public Warehouse OwnedWarehouse { get; private set; }
         public Vector3 OwnedWarehouseLocation
+        
         {
             get => OwnedWarehouse?.Location ?? Vector3.Zero;
             private set
@@ -41,6 +43,8 @@ namespace ImportExportModNamespace
         public WarehouseManager()
         {
             InitializeWarehouses();
+            LoadOwnedWarehouseData();
+            
         }
         
 
@@ -68,27 +72,25 @@ namespace ImportExportModNamespace
             {
                 Blip blip = World.CreateBlip(warehouse.Location);
                 blip.Sprite = BlipSprite.Warehouse;
-                blip.Name = warehouse.Name;
+                blip.Name = "Warehouse";
                 blip.IsShortRange = true;
                 warehouse.Blip = blip;
             }
         }
 
-        public void UpdateOwnedWarehouseBlip()
-{
-    if (OwnedWarehouseBlip != null)
-    {
-        OwnedWarehouseBlip.Color = BlipColor.Blue;
-        OwnedWarehouseBlip.Scale = 1f;
-        OwnedWarehouseBlip.IsShortRange = true;
-        OwnedWarehouseBlip.Name = "Owned Warehouse";
-    }
-    GTA.UI.Notification.Show("UpdateOwnedWarehouseBlip called.");
-}
 
 
         public void SetOwnedWarehouseLocation(Vector3 location)
 {
+    // If there's already an OwnedWarehouseBlip, reset it
+    if (OwnedWarehouseBlip != null)
+    {
+        OwnedWarehouseBlip.Color = BlipColor.White;
+        OwnedWarehouseBlip.Scale = 1f;
+        OwnedWarehouseBlip.IsShortRange = true;
+        OwnedWarehouseBlip.Name = "Warehouse";
+    }
+
     foreach (var warehouse in Warehouses)
     {
         if (warehouse.Location == location)
@@ -98,9 +100,19 @@ namespace ImportExportModNamespace
         }
     }
 
-    UpdateOwnedWarehouseBlip();
-    GTA.UI.Notification.Show("UpdateOwnedWarehouseBlip called from SetOwnedWarehouseLocation.");
+    // If there's an OwnedWarehouse, update its blip
+    if (OwnedWarehouse != null)
+    {
+        OwnedWarehouseBlip = OwnedWarehouse.Blip;
+        OwnedWarehouseBlip.Color = BlipColor.Yellow;
+        OwnedWarehouseBlip.Scale = 1f;
+        OwnedWarehouseBlip.IsShortRange = true;
+        OwnedWarehouseBlip.Name = "Owned Warehouse";
+    }
 }
+
+
+
 
 
 
@@ -130,24 +142,7 @@ namespace ImportExportModNamespace
         public void UpdateNearestWarehouse()
         {
             NearestWarehouse = GetNearestWarehouse();
-            GTA.UI.Notification.Show($"UpdateNearestWarehouse: NearestWarehouseLocation = {NearestWarehouseLocation}");
         }
-
-
-
-        public void SetOwnedWarehouseBlip(Blip blip)
-        {
-            if (OwnedWarehouseBlip != null)
-            {
-                OwnedWarehouseBlip.Delete();
-            }
-
-            OwnedWarehouseBlip = blip;
-            OwnedWarehouseBlip.Color = BlipColor.Green; // Change the color to the desired one
-            OwnedWarehouseBlip.IsShortRange = true;
-        }
-
-
 
 
         public void RemoveOwnedWarehouse()
@@ -163,21 +158,86 @@ namespace ImportExportModNamespace
                 warehouse.Blip?.Delete();
             }
         }
+
+
+        public void SaveOwnedWarehouseData()
+        {
+            string configFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ownedWarehouse.ini");
+            ScriptSettings config = ScriptSettings.Load(configFilePath);
+
+            if (OwnedWarehouse != null)
+            {
+                config.SetValue("Warehouse", "Location", OwnedWarehouse.Location);
+            }
+            else
+            {
+                config.SetValue("Warehouse", "Location", Vector3.Zero); // Set to Vector3.Zero when there's no owned warehouse
+            }
+            config.Save();
+        }
+
+        public void LoadOwnedWarehouseData()
+        {
+            string configFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ownedWarehouse.ini");
+
+            if (File.Exists(configFilePath))
+            {
+                GTA.UI.Notification.Show("Loading owned warehouse data...");
+                ScriptSettings config = ScriptSettings.Load(configFilePath);
+                float x = config.GetValue<float>("Warehouse", "X", 0);
+                float y = config.GetValue<float>("Warehouse", "Y", 0);
+                float z = config.GetValue<float>("Warehouse", "Z", 0);
+                Vector3 location = new Vector3(x, y, z);
+
+                if (location != Vector3.Zero)
+                {
+                    SetOwnedWarehouseLocation(location);
+                    GTA.UI.Notification.Show($"Loaded owned warehouse at {location}");
+                }
+                else
+                {
+                    GTA.UI.Notification.Show("No owned warehouse found in INI file.");
+                    RemoveOwnedWarehouse();
+                }
+            }
+            else
+            {
+                GTA.UI.Notification.Show("INI file not found. No owned warehouse to load.");
+                RemoveOwnedWarehouse();
+            }
+        }
+
+        public bool IsNearestWarehouseOwned()
+        {
+            return OwnedWarehouseLocation == NearestWarehouseLocation;
+        }
+
+
+
+
+
+
+
+        private string GetIniFilePath()
+        {
+            string scriptFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scripts");
+            return Path.Combine(scriptFolderPath, "ownedWarehouse.ini");
+        }
+
+
+        private ScriptSettings LoadIniFile()
+        {
+            string iniFilePath = GetIniFilePath();
+            if (!File.Exists(iniFilePath))
+            {
+                File.Create(iniFilePath).Dispose();
+            }
+
+            return ScriptSettings.Load(iniFilePath);
+        }
     }
-
-
-
-
-
-
-
-
-
-
-    
-    
-    // Other properties and methods
 }
+
 
 
 
